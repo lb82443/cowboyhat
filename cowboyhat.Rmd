@@ -1,0 +1,93 @@
+
+---
+output:
+  html_document:
+    self_contained: no
+---
+
+## The Cowboy Hat  
+
+I've been a SAS user for about 30 years and when I was learning to use the 3D graphics procs in SAS I was introduced to a little program called the "Cowboy Hat". It creates a data set of values that when plotted look vaguely like a stylized 10 gallon cowboy hat. (sort of)
+
+The code can be found here along with a simple graphic in SAS.
+
+[Cowboy Hat](http://support.sas.com/documentation/cdl/en/hostwin/63285/HTML/default/viewer.htm#prodgraph.htm)
+
+I've been taking the Data Science classes from Johns Hopkins on Coursera so I thought I'd try my hand at reproducing it here in R.
+
+
+## The Data
+
+Now lets run the code to create a data set of x, y and z values. I used for loops because that is what I know! I'm sure there are more than one way to accomplish this task....just like in SAS. The algorithm I used for coloring came from a comment on the blog Ripples by Andrew Wyer. Thanks Andrew!
+
+[Ripples Post](https://aschinchon.wordpress.com/myself/#comments)
+
+```{r}
+
+
+library(rgl)
+library(evd)
+
+
+df <- data.frame(x=numeric(),
+                 y=numeric(), 
+                 z=numeric(), 
+                 stringsAsFactors=FALSE) 
+
+cnti <- 0
+
+
+for (i in seq(-5, 5 ,by=.25) )
+  
+{ 
+    
+    for (j in  seq(-5 , 5,by=.25))
+    {
+      cnti <- cnti +1      
+      z <- 4 * (sin(sqrt(i*i+j*j)))
+      
+      df[cnti,1] <- i
+      df[cnti,2] <- j
+      df[cnti,3] <- z
+    }
+}
+
+
+cr <- abs(df$z)/max(abs(df$z))
+cg <- abs(df$x)/max(abs(df$x))
+cb <- abs(df$y)/max(abs(df$y))
+```
+
+## The Graphic
+
+Now lets look at the graphic. You should be able to interact with it using your mouse scroll wheel and right click button.
+
+
+```{r setup, results='asis'}
+library(knitr)
+knit_hooks$set(webgl = hook_webgl)
+cat('<script type="text/javascript">', readLines(system.file('WebGL', 'CanvasMatrix.js', package = 'rgl')), '</script>', sep = '\n')
+```
+
+
+
+
+```{r testgl, webgl=TRUE}
+# clear scene:
+
+open3d()
+# draw shperes in an rgl window
+spheres3d(df$x, df$y, df$z, radius=0.05, color=rgb(cr,cg,cb), zlim=range(df$z))
+
+```
+
+
+
+
+## Some other possibilites
+
+I also like using the tanh() function to replace the sin() function. When my wife was teaching and it was "Just say no to drugs" week at school I printed this one up and used the title "Beware the Black Hole of Drugs."
+
+Try playing  around with some other trig functions and see what pops up!
+
+
